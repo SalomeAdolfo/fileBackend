@@ -2,7 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import multer from 'multer';
 import folderRoutes from './routes/folderRoutes.js';
-
+import authRoutes from './routes/authRoutes.js'
 const app = express();
 
 // Middlewares
@@ -22,5 +22,6 @@ const upload = multer({ storage: storage });
 
 // Routes
 app.use('/folders', folderRoutes);
+app.use('/auth', authRoutes)
 
 export default app;
