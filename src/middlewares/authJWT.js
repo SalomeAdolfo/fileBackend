@@ -22,3 +22,13 @@ export const verifyToken = async (req, res, next) => {
         res.status(500).json({ message: "Error en el servidor" })
     }
 }
+
+export const isAdmin = async (req, res, next) =>{
+    const user = await pool.query('Select * from users where id = ?', [req.userId])
+
+    if(user.rol === 'admin'){
+        next()
+    }
+
+    return res.status(403).json({message: "No tienes los permisos necesarios"})
+}

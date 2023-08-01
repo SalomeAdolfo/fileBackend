@@ -7,7 +7,7 @@ const router = express.Router();
 const upload = multer();
 
 // Endpoint to create a folder
-router.post('/create', middleAuth.verifyToken ,createFolder); //Ruta para crear folder único
+router.post('/create', [middleAuth.verifyToken, middleAuth.isAdmin] ,createFolder); //Ruta para crear folder único
 router.post('/create/:parentFolder?', createFolder); //Ruta para crear subfolders
 
 // Endpoint to add a file to a folder
