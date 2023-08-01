@@ -1,5 +1,5 @@
 import express from 'express';
-import { createFolder, addFileToFolder, deleteFolder, deleteFile, getFoldersAndFiles } from '../controllers/folderController.js';
+import { createFolder, addFileToFolder, deleteFolder, deleteFile, getFoldersAndFiles, getFile, getFilesInFolder } from '../controllers/folderController.js';
 import multer from 'multer';
 
 const router = express.Router();
@@ -20,5 +20,9 @@ router.delete('/delete/:folderName/:fileName', deleteFile);
 
 // Endpoint to get list of folders and files inside each folder
 router.get('/list', getFoldersAndFiles);
+
+router.get('/list/:ruta', getFile)
+
+router.get('/fileList/:ruta', getFilesInFolder)
 
 export default router;

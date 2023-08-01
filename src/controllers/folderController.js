@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path';
 const createFolder = (req, res) => {
     const { name } = req.body;
     const { parentFolder } = req.params; // Obtener el nombre del folder padre desde los parámetros de la URL
@@ -86,4 +87,43 @@ const getFoldersAndFiles = (req, res) => {
     }
 };
 
-export { createFolder, addFileToFolder, deleteFolder, deleteFile, getFoldersAndFiles };
+const getSingleFile = (folderPath, fileName, res) => {
+    const files = fs.readdirSync(folderPath);
+    for (const file of files) {
+        const filePath = path.join(folderPath, file);
+        const stats = fs.statSync(filePath);
+        if (stats.isDirectory()) {
+            getSingleFile(filePath, fileName, res);
+        } else if (file === fileName) {
+            return res.download(filePath);
+        }
+    }
+    return res.status(404).json({ message: 'File not found' });
+};
+
+const getFile = (req, res) => {
+    try {
+        const { ruta } = req.params;
+        var newRuta = ruta.replace(/-/g, '/')
+        const fileName = newRuta.split('/').pop();
+        const folderPath = path.join('./src/uploads', newRuta.slice(0, -fileName.length));
+        getSingleFile(folderPath, fileName, res);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const getFilesInFolder = (req, res) => {
+    try {
+      const { ruta } = req.params;
+      var newRuta = ruta.replace(/-/g, '/')
+      const folderPath = path.join('./src/uploads', newRuta);
+      const files = fs.readdirSync(folderPath);
+      return res.json({ files });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: 'Server Error' });
+    }
+  };
+export { createFolder, addFileToFolder, deleteFolder, deleteFile, getFoldersAndFiles, getFile, getFilesInFolder };
