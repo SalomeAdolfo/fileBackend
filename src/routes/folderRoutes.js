@@ -5,6 +5,7 @@ import multer from 'multer';
 const router = express.Router();
 const upload = multer();
 
+router.post('/create/:parentFolder?', createFolder);
 // Endpoint to create a folder
 router.post('/create', createFolder);
 

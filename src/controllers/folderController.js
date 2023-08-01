@@ -1,12 +1,15 @@
 import fs from 'fs'
 const createFolder = (req, res) => {
     const { name } = req.body;
+    const { parentFolder } = req.params; // Obtener el nombre del folder padre desde los parámetros de la URL
+
     if (!name) {
         return res.status(400).json({ message: 'Folder name is required' });
     }
 
     try {
-        fs.mkdirSync(`./src/uploads/${name}`);
+        const path = parentFolder ? `./src/uploads/${parentFolder}/${name}` : `./src/uploads/${name}`;
+        fs.mkdirSync(path, { recursive: true });
         return res.json({ message: `Folder '${name}' created successfully` });
     } catch (err) {
         console.error(err);
@@ -16,6 +19,7 @@ const createFolder = (req, res) => {
 
 const addFileToFolder = (req, res) => {
     const { folderName } = req.params;
+    var newfolderName = folderName.replace(/-/g, '/')
     const { file } = req;
     if (!folderName) {
         return res.status(400).json({ message: 'Folder name is required' });
@@ -25,8 +29,8 @@ const addFileToFolder = (req, res) => {
     }
 
     try {
-        fs.writeFileSync(`./src/uploads/${folderName}/${file.originalname}`, file.buffer);
-        return res.json({ message: `File '${file.originalname}' added to folder '${folderName}' successfully` });
+        fs.writeFileSync(`./src/uploads/${newfolderName}/${file.originalname}`, file.buffer);
+        return res.json({ message: `File '${file.originalname}' added to folder '${newfolderName}' successfully` });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Server Error' });
