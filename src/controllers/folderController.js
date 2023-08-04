@@ -3,7 +3,7 @@ import path from 'path';
 const createFolder = (req, res) => {
     const { name } = req.body;
     const { parentFolder } = req.params; // Obtener el nombre del folder padre desde los parámetros de la URL
-
+    console.log(name)
     if (!name) {
         return res.status(400).json({ message: 'Folder name is required' });
     }
@@ -67,25 +67,19 @@ const deleteFile = (req, res) => {
         return res.status(500).json({ message: 'Server Error' });
     }
 };
-
-const getFoldersAndFiles = (req, res) => {
+const getFolders = (req, res) => {
     try {
         const folders = fs.readdirSync('./src/uploads', { withFileTypes: true })
             .filter((dirent) => dirent.isDirectory())
             .map((dirent) => dirent.name);
 
-        const filesByFolder = {};
-        folders.forEach((folder) => {
-            const files = fs.readdirSync(`./src/uploads/${folder}`);
-            filesByFolder[folder] = files;
-        });
-
-        return res.json(filesByFolder);
+        return res.json(folders);
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Server Error' });
     }
 };
+
 
 const getSingleFile = (folderPath, fileName, res) => {
     const files = fs.readdirSync(folderPath);
@@ -126,4 +120,4 @@ const getFilesInFolder = (req, res) => {
       return res.status(500).json({ message: 'Server Error' });
     }
   };
-export { createFolder, addFileToFolder, deleteFolder, deleteFile, getFoldersAndFiles, getFile, getFilesInFolder };
+export { createFolder, addFileToFolder, deleteFolder, deleteFile, getFolders, getFile, getFilesInFolder };

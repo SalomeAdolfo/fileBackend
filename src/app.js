@@ -3,11 +3,15 @@ import bodyParser from 'body-parser';
 import multer from 'multer';
 import folderRoutes from './routes/folderRoutes.js';
 import authRoutes from './routes/authRoutes.js'
+import cors from 'cors'
 const app = express();
 
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors({
+  origin: '*'
+}))
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({
