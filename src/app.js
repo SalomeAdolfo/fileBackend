@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import multer from 'multer';
 import folderRoutes from './routes/folderRoutes.js';
 import authRoutes from './routes/authRoutes.js'
+import empleadosRoute from './routes/empleadosRoutes.js'
 import cors from 'cors'
 const app = express();
 
@@ -27,5 +28,6 @@ const upload = multer({ storage: storage });
 // Routes
 app.use('/folders', folderRoutes);
 app.use('/auth', authRoutes)
+app.use('/empleados', empleadosRoute)
 
 export default app;
