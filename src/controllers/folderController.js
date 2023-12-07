@@ -1,27 +1,16 @@
 import fs from 'fs'
 import path from 'path';
-const createFolder = (req, res) => {
-    const { name } = req.body;
-    const { parentFolder } = req.params; // Obtener el nombre del folder padre desde los parámetros de la URL
-    console.log(name)
-    if (!name) {
-        return res.status(400).json({ message: 'Folder name is required' });
-    }
+import { pool } from '../db.js';
 
-    try {
-        const path = parentFolder ? `./src/uploads/${parentFolder}/${name}` : `./src/uploads/${name}`;
-        fs.mkdirSync(path, { recursive: true });
-        return res.json({ message: `Folder '${name}' created successfully` });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Server Error' });
-    }
-};
-
-const addFileToFolder = (req, res) => {
+const addFileToFolder = async (req, res) => {
     const { folderName } = req.params;
+
     var newfolderName = folderName.replace(/-/g, '/')
+
     const { file } = req;
+
+    const { nombre, sector, especie, genero, puede_volar, caracteristicas } = req.body
+
     if (!folderName) {
         return res.status(400).json({ message: 'Folder name is required' });
     }
@@ -31,22 +20,13 @@ const addFileToFolder = (req, res) => {
 
     try {
         fs.writeFileSync(`./src/uploads/${newfolderName}/${file.originalname}`, file.buffer);
+        const query = `insert into personajes (nombre, sector, especie, genero, puede_volar, caracteristicas, imagen) values (?,?,?,?,?,?,?)`
+        const values = [nombre, sector, especie, genero, JSON.parse(puede_volar), caracteristicas, `${newfolderName}-${file.originalname}`]
+        const [result] = await pool.query(query, values)
+
+        console.log(result)
+
         return res.json({ message: `File '${file.originalname}' added to folder '${newfolderName}' successfully` });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Server Error' });
-    }
-};
-
-const deleteFolder = (req, res) => {
-    const { folderName } = req.params;
-    if (!folderName) {
-        return res.status(400).json({ message: 'Folder name is required' });
-    }
-
-    try {
-        fs.rmdirSync(`./src/uploads/${folderName}`, { recursive: true });
-        return res.json({ message: `Folder '${folderName}' deleted successfully` });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: 'Server Error' });
@@ -86,6 +66,7 @@ const getSingleFile = (folderPath, fileName, res) => {
     for (const file of files) {
         const filePath = path.join(folderPath, file);
         const stats = fs.statSync(filePath);
+        console.log(stats)
         if (stats.isDirectory()) {
             getSingleFile(filePath, fileName, res);
         } else if (file === fileName) {
@@ -101,6 +82,7 @@ const getFile = (req, res) => {
         var newRuta = ruta.replace(/-/g, '/')
         const fileName = newRuta.split('/').pop();
         const folderPath = path.join('./src/uploads', newRuta.slice(0, -fileName.length));
+        console.log(`Hola: ${folderPath}`, `fileName: ${fileName}`)
         getSingleFile(folderPath, fileName, res);
     } catch (err) {
         console.error(err);
@@ -110,14 +92,33 @@ const getFile = (req, res) => {
 
 const getFilesInFolder = (req, res) => {
     try {
-      const { ruta } = req.params;
-      var newRuta = ruta.replace(/-/g, '/')
-      const folderPath = path.join('./src/uploads', newRuta);
-      const files = fs.readdirSync(folderPath);
-      return res.json({ files });
+        const { ruta } = req.params;
+        var newRuta = ruta.replace(/-/g, '/')
+        const folderPath = path.join('./src/uploads', newRuta);
+        const files = fs.readdirSync(folderPath);
+        return res.json({ files });
     } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Server Error' });
+        console.error(err);
+        return res.status(500).json({ message: 'Server Error' });
     }
-  };
-export { createFolder, addFileToFolder, deleteFolder, deleteFile, getFolders, getFile, getFilesInFolder };
+};
+
+
+const getPersonajes = async (req, res) => {
+    try {
+        const [rows] = await pool.query('Select * from personajes')
+        res.status(200).json(rows)
+    } catch (error) {
+        res.status(500).json({ message: "Error" })
+    }
+}
+const getSingleData = async (req, res) => {
+    try {
+        const [rows] = await pool.query('Select * from personajes where id = ?', req.params.IdPersonaje)
+        return res.status(200).json(rows)
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Error" })
+    }
+}
+export { addFileToFolder, deleteFile, getFolders, getFile, getFilesInFolder, getSingleData, getPersonajes };
